@@ -35,33 +35,35 @@ project-folder/
 
 Open terminal in the project directory and run:
 
-```bash
+
 docker build --platform=linux/amd64 -t pdf-extractor-cli:latest .
 
 
 Run the Container
 Make sure you have PDF files inside the input/ folder. Then run:
 
-
+```bash
 docker run --rm \
   -v "$(pwd)/input:/app/input" \
   -v "$(pwd)/output:/app/output" \
   pdf-extractor-cli:latest \
   --input_folder /app/input \
   --output /app/output/output.json
+  ```
 This mounts your local input/ and output/ folders into the container and runs the script.
 
 Windows Users (CMD Prompt)
-
+```bash
 docker run --rm ^
   -v "%cd%/input:/app/input" ^
   -v "%cd%/output:/app/output" ^
   pdf-extractor-cli:latest ^
   --input_folder /app/input ^
   --output /app/output/output.json
+  ```
 📝 Output Example
 json
-
+```bash
 {
   "metadata": {
     "persona": "Academic Researcher",
@@ -87,13 +89,15 @@ json
     }
   ]
 }
+```
 📜 requirements.txt
 Ensure you have the following dependencies in your requirements.txt:
 
-
+```bash
 pdfplumber
 pdf2image
 pytesseract
 sentence-transformers
 scikit-learn
 numpy
+```
