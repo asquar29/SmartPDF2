@@ -1,54 +1,95 @@
-PDF Section Extractor & Analyzer
-This Python CLI tool processes a folder of PDFs, extracts structured section outlines using font and numbering heuristics, and ranks the most relevant sections based on inferred persona and task using embeddings.
+# 📘 PDF Section Extractor & Analyzer (Docker CLI)
 
-It leverages:
+This tool processes a folder of PDF files, extracts structured outlines, infers user intent (persona and task), and ranks the most relevant sections using semantic similarity.
 
-pdfplumber for text extraction
+It supports both direct PDF text extraction and OCR fallback. This version runs entirely in a **Docker container**, so no dependencies need to be installed locally.
 
-pdf2image and poppler for image conversion
+---
 
-pytesseract for OCR fallback
+## 🚀 Features
 
-sentence-transformers for semantic similarity
+- Extracts section headings (H1, H2, H3) using font size and numbering
+- Detects the document title
+- Uses sentence embeddings to infer persona & rank top relevant sections
+- OCR fallback via Tesseract for image-based PDFs
+- CLI-enabled: accepts input/output paths
+- Fully containerized with Docker
 
-📂 Folder Structure
+---
 
+## 📦 Project Structure
 
-.
-├── main.py               # Main CLI Python script
-├── requirements.txt      # Dependencies
-├── README.md             # This file
-├── input/                # Put your input PDFs here (optional if using CLI)
-└── output.json           # Output file path as set by CLI
-🛠️ Features
-📑 Extracts titles and hierarchical section headings (H1, H2, H3)
-
-📈 Infers persona and task from document content
-
-🤖 Uses sentence embeddings to rank the top 10 most relevant sections
-
-🔍 Supports both PDF parsing and OCR fallback
-
-🧠 CLI interface to allow flexible usage
-
-💻 Installation
-Install system dependencies (Linux/macOS):
+project-folder/
+├── main.py # Main Python script (CLI enabled)
+├── requirements.txt # Python dependencies
+├── Dockerfile # Docker build file
+├── input/ # Place your PDFs here
+└── output/ # Output JSON will be written here
 
 
-sudo apt-get update
-sudo apt-get install poppler-utils tesseract-ocr
-On Windows, download and install:
+---
 
-Poppler for Windows
+## 🐳 Docker Setup
 
-Tesseract OCR for Windows
+### 🔹 1. Build the Docker Image
 
-Clone the repo and install Python dependencies:
+Open terminal in the project directory and run:
+
+```bash
+docker build --platform=linux/amd64 -t pdf-extractor-cli:latest .
 
 
-pip install -r requirements.txt
-📦 requirements.txt
-txt
+Run the Container
+Make sure you have PDF files inside the input/ folder. Then run:
+
+
+docker run --rm \
+  -v "$(pwd)/input:/app/input" \
+  -v "$(pwd)/output:/app/output" \
+  pdf-extractor-cli:latest \
+  --input_folder /app/input \
+  --output /app/output/output.json
+This mounts your local input/ and output/ folders into the container and runs the script.
+
+Windows Users (CMD Prompt)
+
+docker run --rm ^
+  -v "%cd%/input:/app/input" ^
+  -v "%cd%/output:/app/output" ^
+  pdf-extractor-cli:latest ^
+  --input_folder /app/input ^
+  --output /app/output/output.json
+📝 Output Example
+json
+
+{
+  "metadata": {
+    "persona": "Academic Researcher",
+    "job": "Prepare literature review",
+    "documents": ["example.pdf"],
+    "timestamp": "2025-07-28T12:00:00Z"
+  },
+  "extracted_sections": [
+    {
+      "document": "example.pdf",
+      "page": 2,
+      "section_title": "1.1 Related Work",
+      "importance_score": 0.8432,
+      "rank": 1
+    }
+    // ... up to 10 sections
+  ],
+  "subsection_analysis": [
+    {
+      "document": "example.pdf",
+      "page": 2,
+      "refined_text": "1.1 Related Work"
+    }
+  ]
+}
+📜 requirements.txt
+Ensure you have the following dependencies in your requirements.txt:
+
 
 pdfplumber
 pdf2image
@@ -56,66 +97,3 @@ pytesseract
 sentence-transformers
 scikit-learn
 numpy
-🚀 Usage
-🔹 Command-Line Execution
-
-python main.py \
-  --input_folder "path/to/folder/with/pdfs" \
-  --output "output.json"
-🔹 Optional: Custom Poppler Path (Windows only)
-
-python main.py \
-  --input_folder "path/to/pdfs" \
-  --output "output.json" \
-  --poppler_path "C:/path/to/poppler/bin"
-📤 Output Format
-Example output.json:
-
-
-{
-  "metadata": {
-    "persona": "Academic Researcher",
-    "job": "Prepare literature review",
-    "documents": ["file1.pdf", "file2.pdf"],
-    "timestamp": "2025-07-28T10:22:43.123Z"
-  },
-  "extracted_sections": [
-    {
-      "document": "file1.pdf",
-      "page": 3,
-      "section_title": "1.1 Related Work",
-      "importance_score": 0.8423,
-      "rank": 1
-    }
-    // ... up to TOP_K (10)
-  ],
-  "subsection_analysis": [
-    {
-      "document": "file1.pdf",
-      "page": 3,
-      "refined_text": "1.1 Related Work"
-    }
-  ]
-}
-🧠 How It Works
-Step	Description
-1️⃣	Extracts text from PDFs page-by-page using pdfplumber
-2️⃣	Detects section headers using font size and numbering
-3️⃣	Infers "persona" (e.g., Researcher, Financial Analyst) from content
-4️⃣	Uses Sentence-BERT to find the most relevant sections for the inferred task
-5️⃣	Saves a ranked list of important sections with metadata in a JSON
-
-👤 Persona Detection Logic
-Based on keywords in document titles:
-
-Keyword	Persona	Task
-travel	Travel Planner	Create a travel itinerary
-finance	Financial Analyst	Summarize financial report
-research	Academic Researcher	Prepare literature review
-(default)	General Analyst	Summarize key points
-
-📎 Example
-
-python main.py \
-  --input_folder "C:\Users\htc\Documents\PDFs" \
-  --output "output_1B.json"
